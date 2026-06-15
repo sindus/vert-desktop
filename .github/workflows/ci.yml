@@ -50,6 +50,14 @@ jobs:
         with:
           workspaces: src-tauri
 
+      - name: Create sidecar placeholders (lint only needs them to exist)
+        run: |
+          mkdir -p src-tauri/binaries
+          for bin in ffmpeg magick pandoc; do
+            touch "src-tauri/binaries/${bin}-x86_64-unknown-linux-gnu"
+            chmod +x "src-tauri/binaries/${bin}-x86_64-unknown-linux-gnu"
+          done
+
       - name: Check formatting
         working-directory: src-tauri
         run: cargo fmt --check
@@ -99,6 +107,14 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+
+      - name: Create sidecar placeholders
+        run: |
+          mkdir -p src-tauri/binaries
+          for bin in ffmpeg magick pandoc; do
+            touch "src-tauri/binaries/${bin}-x86_64-unknown-linux-gnu"
+            chmod +x "src-tauri/binaries/${bin}-x86_64-unknown-linux-gnu"
+          done
 
       - name: Run tests
         working-directory: src-tauri
