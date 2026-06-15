@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::AppHandle;
 use tauri_plugin_shell::ShellExt;
 use uuid::Uuid;
@@ -81,8 +81,8 @@ pub async fn convert_file(
 
 async fn convert_image(
     app: &AppHandle,
-    input: &PathBuf,
-    output: &PathBuf,
+    input: &Path,
+    output: &Path,
     opts: &ConvertOptions,
 ) -> Result<()> {
     let quality = opts.quality.unwrap_or(92).to_string();
@@ -112,8 +112,8 @@ async fn convert_image(
 
 async fn convert_audio(
     app: &AppHandle,
-    input: &PathBuf,
-    output: &PathBuf,
+    input: &Path,
+    output: &Path,
     opts: &ConvertOptions,
 ) -> Result<()> {
     let mut args: Vec<String> = vec![
@@ -159,8 +159,8 @@ async fn convert_audio(
 
 async fn convert_video(
     app: &AppHandle,
-    input: &PathBuf,
-    output: &PathBuf,
+    input: &Path,
+    output: &Path,
     opts: &ConvertOptions,
 ) -> Result<()> {
     let mut args: Vec<String> = vec![
@@ -194,7 +194,7 @@ async fn convert_video(
     Ok(())
 }
 
-async fn convert_document(app: &AppHandle, input: &PathBuf, output: &PathBuf) -> Result<()> {
+async fn convert_document(app: &AppHandle, input: &Path, output: &Path) -> Result<()> {
     let result = app
         .shell()
         .sidecar("pandoc")
