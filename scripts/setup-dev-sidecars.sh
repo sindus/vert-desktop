@@ -12,7 +12,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 echo "=== Setting up dev sidecars for $TARGET ==="
 
-# ── FFmpeg (static) ─────────────────────────────────────────────────────────
+# ── FFmpeg ───────────────────────────────────────────────────────────────────
 if [[ "$TARGET" == *linux* ]]; then
   echo "→ Downloading FFmpeg static (Linux)…"
   curl -# -L "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" \
@@ -21,38 +21,27 @@ if [[ "$TARGET" == *linux* ]]; then
   find "$TMP" -name "ffmpeg" -not -path "*/ffprobe*" -type f \
     | head -1 | xargs -I{} cp {} "$BINDIR/ffmpeg-$TARGET"
 elif [[ "$TARGET" == *darwin* ]]; then
-  echo "→ Downloading FFmpeg (macOS)…"
-  curl -# -L "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip" -o "$TMP/ffmpeg.zip"
-  unzip -q "$TMP/ffmpeg.zip" -d "$TMP/ffmpeg"
-  find "$TMP/ffmpeg" -name "ffmpeg" -type f | head -1 \
-    | xargs -I{} cp {} "$BINDIR/ffmpeg-$TARGET"
+  echo "→ Installing FFmpeg via Homebrew (macOS)…"
+  brew install ffmpeg 2>/dev/null || brew upgrade ffmpeg 2>/dev/null || true
+  cp -L "$(brew --prefix)/bin/ffmpeg" "$BINDIR/ffmpeg-$TARGET"
 fi
 chmod +x "$BINDIR/ffmpeg-$TARGET"
 echo "  ✓ ffmpeg $("$BINDIR/ffmpeg-$TARGET" -version 2>&1 | head -1)"
 
-# ── ImageMagick (portable) ────────────────────────────────────────────────────
+# ── ImageMagick ───────────────────────────────────────────────────────────────
 if [[ "$TARGET" == *linux* ]]; then
   echo "→ Downloading ImageMagick portable (Linux)…"
   curl -# -L "https://imagemagick.org/archive/binaries/magick" \
     -o "$BINDIR/magick-$TARGET"
 elif [[ "$TARGET" == *darwin* ]]; then
-  echo "→ Downloading ImageMagick (macOS)…"
-  ARCH=$(uname -m)
-  if [[ "$ARCH" == "arm64" ]]; then
-    curl -# -L "https://imagemagick.org/archive/binaries/ImageMagick-arm64-apple-darwin23.6.0.tar.gz" \
-      -o "$TMP/magick.tar.gz"
-  else
-    curl -# -L "https://imagemagick.org/archive/binaries/ImageMagick-x86_64-apple-darwin20.1.0.tar.gz" \
-      -o "$TMP/magick.tar.gz"
-  fi
-  tar -xzf "$TMP/magick.tar.gz" -C "$TMP"
-  find "$TMP" -name "magick" -type f | head -1 \
-    | xargs -I{} cp {} "$BINDIR/magick-$TARGET"
+  echo "→ Installing ImageMagick via Homebrew (macOS)…"
+  brew install imagemagick 2>/dev/null || brew upgrade imagemagick 2>/dev/null || true
+  cp -L "$(brew --prefix)/bin/magick" "$BINDIR/magick-$TARGET"
 fi
 chmod +x "$BINDIR/magick-$TARGET"
 echo "  ✓ magick $("$BINDIR/magick-$TARGET" --version 2>&1 | head -1 || echo '(checking...)')"
 
-# ── Pandoc (static) ──────────────────────────────────────────────────────────
+# ── Pandoc ────────────────────────────────────────────────────────────────────
 PANDOC_VERSION="3.6.4"
 if [[ "$TARGET" == *linux* ]]; then
   echo "→ Downloading Pandoc $PANDOC_VERSION (Linux)…"
@@ -62,17 +51,9 @@ if [[ "$TARGET" == *linux* ]]; then
   find "$TMP" -name "pandoc" -type f | head -1 \
     | xargs -I{} cp {} "$BINDIR/pandoc-$TARGET"
 elif [[ "$TARGET" == *darwin* ]]; then
-  ARCH=$(uname -m)
-  if [[ "$ARCH" == "arm64" ]]; then
-    curl -# -L "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-arm64-macOS.zip" \
-      -o "$TMP/pandoc.zip"
-  else
-    curl -# -L "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-x86_64-macOS.zip" \
-      -o "$TMP/pandoc.zip"
-  fi
-  unzip -q "$TMP/pandoc.zip" -d "$TMP/pandoc"
-  find "$TMP/pandoc" -name "pandoc" -type f | head -1 \
-    | xargs -I{} cp {} "$BINDIR/pandoc-$TARGET"
+  echo "→ Installing Pandoc via Homebrew (macOS)…"
+  brew install pandoc 2>/dev/null || brew upgrade pandoc 2>/dev/null || true
+  cp -L "$(brew --prefix)/bin/pandoc" "$BINDIR/pandoc-$TARGET"
 fi
 chmod +x "$BINDIR/pandoc-$TARGET"
 echo "  ✓ pandoc $("$BINDIR/pandoc-$TARGET" --version 2>&1 | head -1)"

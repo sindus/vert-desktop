@@ -1,0 +1,35 @@
+name: vert-desktop
+title: VERT Desktop
+summary: Privacy-first file converter — images, audio, video, documents
+description: |
+  VERT Desktop converts images, audio, video and documents entirely locally.
+  No uploads, no servers, no internet required.
+
+  Bundled converters:
+  - FFmpeg (audio + video)
+  - ImageMagick (images, 150+ formats)
+  - Pandoc (documents)
+
+version: "0.1.2"
+grade: stable
+confinement: strict
+base: core22
+
+lint:
+  ignore:
+    - library
+
+apps:
+  vert-desktop:
+    command: bin/vert-desktop
+    extensions: [gnome]
+    plugs:
+      - home
+      - removable-media
+
+parts:
+  vert-desktop:
+    plugin: dump
+    source: snap-staging/
+    stage:
+      - bin/

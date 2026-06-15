@@ -24,7 +24,7 @@ jobs:
           - name: Linux x86_64
             platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            bundles: deb,appimage,snap
+            bundles: deb,appimage
 
           - name: macOS Intel
             platform: macos-13
@@ -109,21 +109,34 @@ jobs:
           prerelease: false
           args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
 
+      - name: Build snap package
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          sed -i "s/^version:.*/version: \"${VERSION}\"/" snap/snapcraft.yaml
+          mkdir -p snap-staging/bin
+          cp src-tauri/target/x86_64-unknown-linux-gnu/release/vert-desktop snap-staging/bin/
+          cp src-tauri/binaries/ffmpeg-x86_64-unknown-linux-gnu   snap-staging/bin/
+          cp src-tauri/binaries/magick-x86_64-unknown-linux-gnu   snap-staging/bin/
+          cp src-tauri/binaries/pandoc-x86_64-unknown-linux-gnu   snap-staging/bin/
+          chmod +x snap-staging/bin/*
+          snapcraft --destructive-mode
+
       - name: Publish to Snap Store
         if: matrix.platform == 'ubuntu-22.04'
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
         run: |
           if [ -z "$SNAPCRAFT_STORE_CREDENTIALS" ]; then
-            echo "No Snapcraft credentials configured, skipping publish"
+            echo "No Snapcraft credentials, skipping publish"
             exit 0
           fi
-          SNAP_FILE=$(find src-tauri/target -name "*.snap" | head -1)
+          SNAP_FILE=$(find . -maxdepth 1 -name "*.snap" | head -1)
           if [ -z "$SNAP_FILE" ]; then
-            echo "No .snap file found, skipping publish"
-            exit 0
+            echo "No .snap file found"
+            exit 1
           fi
-          echo "Publishing $SNAP_FILE to Snap Store (stable channel)"
+          echo "Publishing $SNAP_FILE to Snap Store (stable)"
           snapcraft upload --release=stable "$SNAP_FILE"
 
   update-homebrew:
