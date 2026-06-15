@@ -22,7 +22,7 @@ export async function convertFile(
   options: ConvertOptions,
 ): Promise<ConvertResult> {
   const request: ConvertRequest = {
-    input_path: file.file.name,
+    input_path: file.filePath,
     output_format: file.targetFormat,
     options: {
       quality: options.quality,
