@@ -230,6 +230,13 @@ async fn convert_document(
 }
 
 #[tauri::command]
+pub async fn save_file(from: String, to: String) -> std::result::Result<(), AppError> {
+    std::fs::copy(&from, &to)
+        .map(|_| ())
+        .map_err(AppError::from)
+}
+
+#[tauri::command]
 pub async fn get_file_info(path: String) -> std::result::Result<FileInfo, AppError> {
     let path = PathBuf::from(&path);
     let meta = std::fs::metadata(&path).map_err(AppError::from)?;

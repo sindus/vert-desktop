@@ -5,7 +5,7 @@ import type { ConvertFile } from "../converters/types";
 import FormatDropdown from "./FormatDropdown";
 import ProgressBar from "./ProgressBar";
 import { save } from "@tauri-apps/plugin-dialog";
-import { copyFile } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
 import { useAppStore } from "../store";
 
 interface FileCardProps {
@@ -39,7 +39,7 @@ export default function FileCard({ file }: FileCardProps) {
       });
 
       if (savePath) {
-        await copyFile(file.outputPath, savePath);
+        await invoke("save_file", { from: file.outputPath, to: savePath });
         addToast(`${file.name} → ${file.targetFormat.toUpperCase()} saved`, "success");
       }
     } catch {
