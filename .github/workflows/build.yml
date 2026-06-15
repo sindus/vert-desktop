@@ -54,10 +54,6 @@ jobs:
             librsvg2-dev \
             patchelf
 
-      - name: Install snapcraft (Linux only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: sudo snap install snapcraft --classic
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -80,8 +76,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          # Build snap directly on the runner without LXD/multipass
-          SNAPCRAFT_BUILD_ENVIRONMENT: host
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "VERT Desktop ${{ github.ref_name }}"
@@ -103,10 +97,8 @@ jobs:
           prerelease: false
           args: --target ${{ matrix.target }} --bundles ${{ matrix.bundles }}
 
-      - name: Build snap package
+      - name: Stage snap binaries
         if: matrix.platform == 'ubuntu-22.04'
-        env:
-          SNAPCRAFT_BUILD_ENVIRONMENT: host
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           sed -i "s/^version:.*/version: \"${VERSION}\"/" snap/snapcraft.yaml
@@ -116,8 +108,11 @@ jobs:
           cp src-tauri/binaries/magick-x86_64-unknown-linux-gnu   snap-staging/bin/
           cp src-tauri/binaries/pandoc-x86_64-unknown-linux-gnu   snap-staging/bin/
           chmod +x snap-staging/bin/*
-          sudo snap install core22 || true
-          snapcraft --destructive-mode
+
+      - name: Build snap package
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: snapcore/action-build@v1
+        id: snapcraft
 
       - name: Publish to Snap Store
         if: matrix.platform == 'ubuntu-22.04'
@@ -128,7 +123,10 @@ jobs:
             echo "No Snapcraft credentials, skipping publish"
             exit 0
           fi
-          SNAP_FILE=$(find . -maxdepth 1 -name "*.snap" | head -1)
+          SNAP_FILE="${{ steps.snapcraft.outputs.snap }}"
+          if [ -z "$SNAP_FILE" ]; then
+            SNAP_FILE=$(find . -maxdepth 1 -name "*.snap" | head -1)
+          fi
           if [ -z "$SNAP_FILE" ]; then
             echo "No .snap file found"
             exit 1
