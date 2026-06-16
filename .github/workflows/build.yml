@@ -134,7 +134,14 @@ jobs:
           snapcraft login --with /tmp/snap-creds
           rm -f /tmp/snap-creds
           echo "Publishing $SNAP_FILE to Snap Store (stable)"
-          snapcraft upload --release=stable "$SNAP_FILE"
+          snapcraft upload --release=stable "$SNAP_FILE" || {
+            LOG=$(ls -t ~/.local/state/snapcraft/log/ 2>/dev/null | head -1)
+            if [ -n "$LOG" ]; then
+              echo "=== Snapcraft log ==="
+              cat ~/.local/state/snapcraft/log/$LOG
+            fi
+            exit 1
+          }
 
   update-homebrew:
     name: Update Homebrew Tap
