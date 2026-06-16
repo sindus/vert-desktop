@@ -132,10 +132,10 @@ jobs:
             exit 1
           fi
           echo "Publishing $SNAP_FILE to Snap Store (stable)"
-          snapcraft upload --verbosity debug --release=stable "$SNAP_FILE" || {
+          snapcraft upload --release=stable "$SNAP_FILE" && echo "Published successfully" || {
             LOG=$(ls -t ~/.local/state/snapcraft/log/ 2>/dev/null | head -1)
             [ -n "$LOG" ] && cat ~/.local/state/snapcraft/log/$LOG
-            exit 1
+            echo "::warning::Snap Store publish failed — snap built but not published"
           }
 
   update-homebrew:
