@@ -15,10 +15,10 @@ echo "=== Setting up dev sidecars for $TARGET ==="
 # ── FFmpeg ───────────────────────────────────────────────────────────────────
 if [[ "$TARGET" == *linux* ]]; then
   echo "→ Downloading FFmpeg static (Linux)…"
-  curl -# -L "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" \
+  curl -# -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz" \
     -o "$TMP/ffmpeg.tar.xz"
   tar -xJf "$TMP/ffmpeg.tar.xz" -C "$TMP"
-  find "$TMP" -name "ffmpeg" -not -path "*/ffprobe*" -type f \
+  find "$TMP" -name "ffmpeg" -not -name "ffprobe" -not -name "ffplay" -type f \
     | head -1 | xargs -I{} cp {} "$BINDIR/ffmpeg-$TARGET"
 elif [[ "$TARGET" == *darwin* ]]; then
   echo "→ Installing FFmpeg via Homebrew (macOS)…"
