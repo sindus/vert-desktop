@@ -23,6 +23,8 @@ apps:
   vert-desktop:
     command: bin/vert-desktop
     extensions: [gnome]
+    environment:
+      APPIMAGE_EXTRACT_AND_RUN: "1"
     plugs:
       - home
       - removable-media
